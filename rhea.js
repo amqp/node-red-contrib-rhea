@@ -44,7 +44,7 @@ module.exports = function(RED) {
         
         var node = this
         // node not yet connected
-        this.status({fill:"red",shape:"dot",text:"disconnected"});
+        this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
         
         if (this.endpointConfig) {
             
@@ -58,9 +58,14 @@ module.exports = function(RED) {
             
             container.on('connection_open', function(context) {
                 // node connected
-                node.status({fill:"green",shape:"dot",text:"connected"});
+                node.status({ fill: 'green', shape: 'dot', text: 'connected' })
                 
                 sender = context.connection.open_sender(address)
+            })
+            
+            container.on('disconnected', function(context) {
+                // node disconnected
+                node.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
             })
             
             this.on('input', function(msg) {
@@ -92,7 +97,7 @@ module.exports = function(RED) {
         
         var node = this
         // node not yet connected
-        this.status({fill:"red",shape:"dot",text:"disconnected"});
+        this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
         
         if (this.endpointConfig) {
             
@@ -106,14 +111,19 @@ module.exports = function(RED) {
             
             container.on('connection_open', function(context) {
                 // node connected
-                node.status({fill:"green",shape:"dot",text:"connected"});
+                node.status({ fill: 'green', shape: 'dot', text: 'connected' })
                 
                 receiver = context.connection.open_receiver(address)
             })
             
+            container.on('disconnected', function(context) {
+                // node disconnected
+                node.status({fill: 'red', shape: 'dot', text: 'disconnected' })
+            })
+            
             container.on('message', function(context) {
-                var msg = { payload: context.message.body };
-				node.send(msg);
+                var msg = { payload: context.message.body }
+				node.send(msg)
             })
             
             container.connect(options)
