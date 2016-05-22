@@ -25,9 +25,6 @@ module.exports = function(RED) {
         
         this.host = config.host
         this.port = config.port
-        
-        console.log("endpoint host : " + this.host)
-        console.log("endpoint port : " + this.port)
     }
     
     RED.nodes.registerType('amqp-endpoint', amqpEndpointNode)
@@ -45,30 +42,37 @@ module.exports = function(RED) {
         this.endpoint = config.endpoint
         this.endpointConfig = RED.nodes.getNode(this.endpoint)
         
+        var node = this
+        // node not yet connected
+        this.status({fill:"red",shape:"dot",text:"disconnected"});
+        
         if (this.endpointConfig) {
             
             // get all other configuration
 			this.address = config.address;
         
             var options = { 'host' : this.endpointConfig.host, 'port' : this.endpointConfig.port }
-            container.connect(options).open_sender(this.address);
             
-            var mycontext;
+            var sender;
+            var address = this.address
+            
+            container.on('connection_open', function(context) {
+                // node connected
+                node.status({fill:"green",shape:"dot",text:"connected"});
+                
+                sender = context.connection.open_sender(address)
+            })
             
             this.on('input', function(msg) {
-                
                 var message = msg.payload;
-                
-                mycontext.sender.send({body : message})
+                // enough credits to send
+                if (sender.sendable()) {
+                    sender.send({body : message})
+                }
             })
             
-            container.on('sendable', function (context) {
-                 mycontext = context 
-                 console.log("sendable")
-            })
+            container.connect(options)
         }
-        
-        
     }
     
     RED.nodes.registerType('amqp-sender', amqpSenderNode)
