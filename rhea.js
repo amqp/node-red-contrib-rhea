@@ -76,4 +76,49 @@ module.exports = function(RED) {
     }
     
     RED.nodes.registerType('amqp-sender', amqpSenderNode)
+    
+    /**
+     * Node for AMQP receiver
+     */
+    function amqpReceiverNode(config) {
+        
+        RED.nodes.createNode(this, config);
+        
+        var container = require('rhea')
+        
+        // get endpoint configuration
+        this.endpoint = config.endpoint
+        this.endpointConfig = RED.nodes.getNode(this.endpoint)
+        
+        var node = this
+        // node not yet connected
+        this.status({fill:"red",shape:"dot",text:"disconnected"});
+        
+        if (this.endpointConfig) {
+            
+            // get all other configuration
+			this.address = config.address;
+        
+            var options = { 'host' : this.endpointConfig.host, 'port' : this.endpointConfig.port }
+            
+            var receiver;
+            var address = this.address
+            
+            container.on('connection_open', function(context) {
+                // node connected
+                node.status({fill:"green",shape:"dot",text:"connected"});
+                
+                receiver = context.connection.open_receiver(address)
+            })
+            
+            container.on('message', function(context) {
+                var msg = { payload: context.message.body };
+				node.send(msg);
+            })
+            
+            container.connect(options)
+        }
+    }
+    
+    RED.nodes.registerType('amqp-receiver', amqpReceiverNode)
 }

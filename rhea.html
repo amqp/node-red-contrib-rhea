@@ -27,13 +27,13 @@
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
     </div>
- </script>
+</script>
  
- <script type="text/x-red" data-help-name="amqp-sender">
+<script type="text/x-red" data-help-name="amqp-sender">
     <p>AMQP sender node</p>
 </script>
  
- <script type="text/javascript">
+<script type="text/javascript">
     RED.nodes.registerType('amqp-sender' ,{
         category: 'output',
         color: "Silver",
@@ -49,9 +49,46 @@
             return this.value || 'amqp-sender'    
         }
     })
- </script>
+</script>
+
+<script type="text/x-red" data-template-name="amqp-receiver">
+    <div class="form-row">
+        <label for="node-input-endpoint"><i class="icon-tasks"></i> Endpoint</label>
+        <input type="text" id="node-input-endpoint">
+    </div>
+    <div class="form-row">
+        <label for="node-input-address"><i class="icon-tasks"></i> Address</label>
+        <input type="text" id="node-input-address">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="name">
+    </div>
+</script>
  
- <script type="text/x-red" data-template-name="amqp-endpoint">
+<script type="text/x-red" data-help-name="amqp-receiver">
+    <p>AMQP receiver node</p>
+</script>
+ 
+<script type="text/javascript">
+    RED.nodes.registerType('amqp-receiver' ,{
+        category: 'input',
+        color: "Silver",
+        inputs: 0,
+        outputs: 1,
+        icon: "amqp_node.png",
+        defaults : {
+            endpoint: { type: 'amqp-endpoint', required: true },
+            address: { value: '', required: true },
+            name: { value: '' }
+        },
+        label: function() {
+            return this.value || 'amqp-receiver'    
+        }
+    })
+</script>
+ 
+<script type="text/x-red" data-template-name="amqp-endpoint">
 	<div class="form-row">
         <label for="node-config-input-host"><i class="icon-tasks"></i> Host</label>
         <input type="text" id="node-config-input-host" placeholder="host">
