@@ -49,11 +49,12 @@ module.exports = function(RED) {
         if (this.endpointConfig) {
             
             // get all other configuration
-			this.address = config.address;
+			this.address = config.address
         
             var options = { 'host' : this.endpointConfig.host, 'port' : this.endpointConfig.port }
             
-            var sender;
+            var connection = null
+            var sender = null
             var address = this.address
             
             container.on('connection_open', function(context) {
@@ -69,14 +70,20 @@ module.exports = function(RED) {
             })
             
             this.on('input', function(msg) {
-                var message = msg.payload;
+                var message = msg.payload
                 // enough credits to send
                 if (sender.sendable()) {
                     sender.send({body : message})
                 }
             })
             
-            container.connect(options)
+            this.on('close', function() {
+                if (sender != null)
+                    sender.detach()
+                connection.close()
+            })
+            
+            connection = container.connect(options)
         }
     }
     
@@ -87,7 +94,7 @@ module.exports = function(RED) {
      */
     function amqpReceiverNode(config) {
         
-        RED.nodes.createNode(this, config);
+        RED.nodes.createNode(this, config)
         
         var container = require('rhea')
         
@@ -102,11 +109,12 @@ module.exports = function(RED) {
         if (this.endpointConfig) {
             
             // get all other configuration
-			this.address = config.address;
+			this.address = config.address
         
             var options = { 'host' : this.endpointConfig.host, 'port' : this.endpointConfig.port }
             
-            var receiver;
+            var connection = null
+            var receiver = null
             var address = this.address
             
             container.on('connection_open', function(context) {
@@ -126,7 +134,13 @@ module.exports = function(RED) {
 				node.send(msg)
             })
             
-            container.connect(options)
+            this.on('close', function() {
+                if (receiver != null)
+                    receiver.detach()
+                connection.close()
+            })
+            
+            connection = container.connect(options)
         }
     }
     
