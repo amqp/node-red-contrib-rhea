@@ -102,6 +102,7 @@ module.exports = function(RED) {
         this.endpointConfig = RED.nodes.getNode(this.endpoint)
         // get all other configuration
         this.address = n.address
+        this.autoaccept = n.autoaccept
 
         var node = this
         // node not yet connected
@@ -113,7 +114,9 @@ module.exports = function(RED) {
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' })
 
-                node.receiver = context.connection.open_receiver(node.address)
+                var options = { 'source' : node.address, 'autoaccept' : node.autoaccept }
+                console.log(options)
+                node.receiver = context.connection.open_receiver(options)
             })
 
             container.on('disconnected', function(context) {
