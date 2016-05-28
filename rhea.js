@@ -15,134 +15,127 @@
  */
 
 module.exports = function(RED) {
-    
+
+    var rhea = require('rhea');
+
     /**
      * Node for configuring an AMQP endpoint
      */
-    function amqpEndpointNode(config) {
-        
-        RED.nodes.createNode(this, config)
-        
-        this.host = config.host
-        this.port = config.port
+    function amqpEndpointNode(n) {
+
+        RED.nodes.createNode(this, n)
+
+        this.host = n.host
+        this.port = n.port
     }
-    
+
     RED.nodes.registerType('amqp-endpoint', amqpEndpointNode)
-    
+
     /**
      * Node for AMQP sender
      */
-    function amqpSenderNode(config) {
-        
-        RED.nodes.createNode(this, config);
-        
-        var container = require('rhea')
-        
+    function amqpSenderNode(n) {
+
+        RED.nodes.createNode(this, n);
+
+        var container = rhea.create_container()
+
         // get endpoint configuration
-        this.endpoint = config.endpoint
+        this.endpoint = n.endpoint
         this.endpointConfig = RED.nodes.getNode(this.endpoint)
-        
+        // get all other configuration
+        this.address = n.address
+        this.autosettle = n.autosettle
+
         var node = this
         // node not yet connected
         this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
-        
+
         if (this.endpointConfig) {
-            
-            // get all other configuration
-			this.address = config.address
-        
-            var options = { 'host' : this.endpointConfig.host, 'port' : this.endpointConfig.port }
-            
-            var connection = null
-            var sender = null
-            var address = this.address
-            
+
             container.on('connection_open', function(context) {
+                
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' })
-                
-                sender = context.connection.open_sender(address)
+
+                var options = { 'target' : node.address, 'autosettle' : node.autosettle }
+                node.sender = context.connection.open_sender(options)
             })
-            
+
             container.on('disconnected', function(context) {
                 // node disconnected
                 node.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
             })
-            
+
             this.on('input', function(msg) {
                 var message = msg.payload
                 // enough credits to send
-                if (sender.sendable()) {
-                    sender.send({body : message})
+                if (node.sender.sendable()) {
+                    node.sender.send({body : message})
                 }
             })
-            
+
             this.on('close', function() {
-                if (sender != null)
-                    sender.detach()
+                if (node.sender != null)
+                    node.sender.detach()
                 connection.close()
             })
-            
-            connection = container.connect(options)
+
+            var options = { 'host' : node.endpointConfig.host, 'port' : node.endpointConfig.port }
+            node.connection = container.connect(options)
         }
     }
-    
+
     RED.nodes.registerType('amqp-sender', amqpSenderNode)
-    
+
     /**
      * Node for AMQP receiver
      */
-    function amqpReceiverNode(config) {
-        
-        RED.nodes.createNode(this, config)
-        
-        var container = require('rhea')
-        
+    function amqpReceiverNode(n) {
+
+        RED.nodes.createNode(this, n)
+
+        var container = rhea.create_container()
+
         // get endpoint configuration
-        this.endpoint = config.endpoint
+        this.endpoint = n.endpoint
         this.endpointConfig = RED.nodes.getNode(this.endpoint)
-        
+        // get all other configuration
+        this.address = n.address
+
         var node = this
         // node not yet connected
         this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
-        
+
         if (this.endpointConfig) {
-            
-            // get all other configuration
-			this.address = config.address
-        
-            var options = { 'host' : this.endpointConfig.host, 'port' : this.endpointConfig.port }
-            
-            var connection = null
-            var receiver = null
-            var address = this.address
             
             container.on('connection_open', function(context) {
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' })
-                
-                receiver = context.connection.open_receiver(address)
+
+                node.receiver = context.connection.open_receiver(node.address)
             })
-            
+
             container.on('disconnected', function(context) {
                 // node disconnected
                 node.status({fill: 'red', shape: 'dot', text: 'disconnected' })
             })
-            
+
             container.on('message', function(context) {
                 var msg = { payload: context.message.body }
 				node.send(msg)
             })
-            
+
             this.on('close', function() {
-                if (receiver != null)
-                    receiver.detach()
-                connection.close()
+                if (node.receiver != null)
+                    node.receiver.detach()
+                node.connection.close()
             })
-            
-            connection = container.connect(options)
+
+            var options = { 'host' : node.endpointConfig.host, 'port' : node.endpointConfig.port }
+            node.connection = container.connect(options)
         }
     }
-    
+
     RED.nodes.registerType('amqp-receiver', amqpReceiverNode)
 }

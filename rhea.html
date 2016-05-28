@@ -1,19 +1,19 @@
  <!--
     Copyright 2016 Red Hat Inc.
-    
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
-    
+
         http://www.apache.org/licenses/LICENSE-2.0
-        
+
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
  -->
- 
+
  <script type="text/x-red" data-template-name="amqp-sender">
     <div class="form-row">
         <label for="node-input-endpoint"><i class="icon-tasks"></i> Endpoint</label>
@@ -24,15 +24,20 @@
         <input type="text" id="node-input-address">
     </div>
     <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-autosettle" style="display: inline-block; width: auto; vertical-align: top;" checked>
+        <label for="node-input-autosettle" style="width: 70%;">Autosettle</label>
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
     </div>
 </script>
- 
+
 <script type="text/x-red" data-help-name="amqp-sender">
     <p>AMQP sender node</p>
 </script>
- 
+
 <script type="text/javascript">
     RED.nodes.registerType('amqp-sender' ,{
         category: 'output',
@@ -43,10 +48,11 @@
         defaults : {
             endpoint: { type: 'amqp-endpoint', required: true },
             address: { value: '', required: true },
+            autosettle: { value: true },
             name: { value: '' }
         },
         label: function() {
-            return this.value || 'amqp-sender'    
+            return this.value || 'amqp-sender'
         }
     })
 </script>
@@ -65,11 +71,11 @@
         <input type="text" id="node-input-name" placeholder="name">
     </div>
 </script>
- 
+
 <script type="text/x-red" data-help-name="amqp-receiver">
     <p>AMQP receiver node</p>
 </script>
- 
+
 <script type="text/javascript">
     RED.nodes.registerType('amqp-receiver' ,{
         category: 'input',
@@ -83,11 +89,11 @@
             name: { value: '' }
         },
         label: function() {
-            return this.value || 'amqp-receiver'    
+            return this.value || 'amqp-receiver'
         }
     })
 </script>
- 
+
 <script type="text/x-red" data-template-name="amqp-endpoint">
 	<div class="form-row">
         <label for="node-config-input-host"><i class="icon-tasks"></i> Host</label>
@@ -109,7 +115,7 @@
         defaults: {
           host: { value: '', required: true },
           port: { value: '', required: true } ,
-          name: { value: '' } 
+          name: { value: '' }
         },
 		label: function() {
             return this.name || 'amqp-endpoint';
