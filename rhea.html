@@ -29,6 +29,11 @@
         <label for="node-input-autosettle" style="width: 70%;">Autosettle</label>
     </div>
     <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-dynamic" style="display: inline-block; width: auto; vertical-align: top;" checked>
+        <label for="node-input-dynamic" style="width: 70%;">Dynamic</label>
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
     </div>
@@ -49,6 +54,7 @@
             endpoint: { type: 'amqp-endpoint', required: true },
             address: { value: '', required: true },
             autosettle: { value: true },
+            dynamic: { value: false },
             name: { value: '' }
         },
         label: function() {

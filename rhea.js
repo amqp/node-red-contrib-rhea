@@ -46,6 +46,7 @@ module.exports = function(RED) {
         // get all other configuration
         this.address = n.address
         this.autosettle = n.autosettle
+        this.dynamic = n.dynamic
 
         var node = this
         // node not yet connected
@@ -60,7 +61,7 @@ module.exports = function(RED) {
                 
                 // build sender options based on node configuration
                 var options = { 
-                    target : { address : node.address }, 
+                    target : { address : node.address, dynamic : node.dynamic }, 
                     autosettle : node.autosettle 
                 }
                 node.sender = context.connection.open_sender(options)
