@@ -57,8 +57,12 @@ module.exports = function(RED) {
                 
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' })
-
-                var options = { target : { address : node.address }, autosettle : node.autosettle }
+                
+                // build sender options based on node configuration
+                var options = { 
+                    target : { address : node.address }, 
+                    autosettle : node.autosettle 
+                }
                 node.sender = context.connection.open_sender(options)
             })
 
@@ -118,6 +122,7 @@ module.exports = function(RED) {
         // get all other configuration
         this.address = n.address
         this.autoaccept = n.autoaccept
+        this.prefetch = n.prefetch       
 
         var node = this
         // node not yet connected
@@ -129,7 +134,12 @@ module.exports = function(RED) {
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' })
 
-                var options = { source : { address : node.address }, autoaccept : node.autoaccept }
+                // build receiver options based on node configuration
+                var options = { 
+                    source : { address : node.address }, 
+                    prefetch: node.prefetch, autoaccept : 
+                    node.autoaccept 
+                }
                 node.receiver = context.connection.open_receiver(options)
             })
 

@@ -72,6 +72,10 @@
         <label for="node-input-autoaccept" style="width: 70%;">Autoaccept</label>
     </div>
     <div class="form-row">
+        <label for="node-input-prefetch"><i class="icon-tasks"></i> Prefetch</label>
+        <input type="text" id="node-input-prefetch">
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
     </div>
@@ -92,10 +96,14 @@
             endpoint: { type: 'amqp-endpoint', required: true },
             address: { value: '', required: true },
             autoaccept: { value: true },
+            prefetch: { value: 500, required: true, validate: RED.validators.number() },
             name: { value: '' }
         },
         label: function() {
             return this.value || 'amqp-receiver'
+        },
+        oneditprepare: function() {
+            $("#node-input-prefetch").spinner({min:0});
         }
     })
 </script>
@@ -120,7 +128,7 @@
 		category: 'config',
         defaults: {
           host: { value: '', required: true },
-          port: { value: '', required: true } ,
+          port: { value: '', required: true, validate: RED.validators.number() } ,
           name: { value: '' }
         },
 		label: function() {
