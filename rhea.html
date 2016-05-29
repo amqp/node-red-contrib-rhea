@@ -41,10 +41,10 @@
 <script type="text/javascript">
     RED.nodes.registerType('amqp-sender' ,{
         category: 'output',
-        color: "Silver",
+        color: 'Silver',
         inputs: 1,
         outputs: 0,
-        icon: "amqp_node.png",
+        icon: 'amqp_node.png',
         defaults : {
             endpoint: { type: 'amqp-endpoint', required: true },
             address: { value: '', required: true },
@@ -76,6 +76,11 @@
         <input type="text" id="node-input-prefetch">
     </div>
     <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-dynamic" style="display: inline-block; width: auto; vertical-align: top;" checked>
+        <label for="node-input-dynamic" style="width: 70%;">Dynamic</label>
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
     </div>
@@ -88,22 +93,28 @@
 <script type="text/javascript">
     RED.nodes.registerType('amqp-receiver' ,{
         category: 'input',
-        color: "Silver",
+        color: 'Silver',
         inputs: 0,
         outputs: 1,
-        icon: "amqp_node.png",
+        icon: 'amqp_node.png',
         defaults : {
             endpoint: { type: 'amqp-endpoint', required: true },
             address: { value: '', required: true },
             autoaccept: { value: true },
             prefetch: { value: 500, required: true, validate: RED.validators.number() },
+            dynamic: { value: false },
             name: { value: '' }
         },
         label: function() {
             return this.value || 'amqp-receiver'
         },
         oneditprepare: function() {
-            $("#node-input-prefetch").spinner({min:0});
+            $('#node-input-prefetch').spinner({min:0});
+            
+            // if dynamic is set, the address MUST NOT be used (AMQP 1.0 spec)
+            $('#node-input-dynamic').on('change', function() {
+                $('#node-input-address').prop('disabled', this.checked)
+            })
         }
     })
 </script>

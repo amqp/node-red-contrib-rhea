@@ -122,7 +122,11 @@ module.exports = function(RED) {
         // get all other configuration
         this.address = n.address
         this.autoaccept = n.autoaccept
-        this.prefetch = n.prefetch       
+        this.prefetch = n.prefetch
+        this.dynamic = n.dynamic
+        
+        if (this.dynamic)
+            this.address = undefined       
 
         var node = this
         // node not yet connected
@@ -135,11 +139,12 @@ module.exports = function(RED) {
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' })
 
                 // build receiver options based on node configuration
-                var options = { 
-                    source : { address : node.address }, 
-                    prefetch: node.prefetch, autoaccept : 
-                    node.autoaccept 
+                var options = {
+                    source : { address : node.address, dynamic : node.dynamic },  
+                    prefetch: node.prefetch, 
+                    autoaccept : node.autoaccept,
                 }
+                
                 node.receiver = context.connection.open_receiver(options)
             })
 
