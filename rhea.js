@@ -58,7 +58,7 @@ module.exports = function(RED) {
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' })
 
-                var options = { 'target' : node.address, 'autosettle' : node.autosettle }
+                var options = { target : { address : node.address }, autosettle : node.autosettle }
                 node.sender = context.connection.open_sender(options)
             })
 
@@ -66,12 +66,27 @@ module.exports = function(RED) {
                 // node disconnected
                 node.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
             })
+            
+            container.on('accepted', function(context) {
+                console.log('accepted')
+                // TODO
+            })
+            
+            container.on('released', function(context) {
+                console.log('released')
+                // TODO
+            })
+            
+            container.on('rejected', function(context) {
+                console.log('rejected')
+                // TODO
+            })
 
             this.on('input', function(msg) {
                 var message = msg.payload
                 // enough credits to send
                 if (node.sender.sendable()) {
-                    node.sender.send({body : message})
+                    node.sender.send({ body : message })
                 }
             })
 
@@ -81,7 +96,7 @@ module.exports = function(RED) {
                 connection.close()
             })
 
-            var options = { 'host' : node.endpointConfig.host, 'port' : node.endpointConfig.port }
+            var options = { host : node.endpointConfig.host, port : node.endpointConfig.port }
             node.connection = container.connect(options)
         }
     }
@@ -114,8 +129,7 @@ module.exports = function(RED) {
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' })
 
-                var options = { 'source' : node.address, 'autoaccept' : node.autoaccept }
-                console.log(options)
+                var options = { source : { address : node.address }, autoaccept : node.autoaccept }
                 node.receiver = context.connection.open_receiver(options)
             })
 
@@ -135,7 +149,7 @@ module.exports = function(RED) {
                 node.connection.close()
             })
 
-            var options = { 'host' : node.endpointConfig.host, 'port' : node.endpointConfig.port }
+            var options = { host : node.endpointConfig.host, port : node.endpointConfig.port }
             node.connection = container.connect(options)
         }
     }
