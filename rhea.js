@@ -73,25 +73,21 @@ module.exports = function(RED) {
             })
             
             container.on('accepted', function(context) {
-                console.log('accepted')
-                // TODO
+                outDelivery(node, context.delivery, 'accepted')
             })
             
             container.on('released', function(context) {
-                console.log('released')
-                // TODO
+                outDelivery(node, context.delivery, 'released')
             })
             
             container.on('rejected', function(context) {
-                console.log('rejected')
-                // TODO
+                outDelivery(node, context.delivery, 'rejected')
             })
 
             this.on('input', function(msg) {
-                var message = msg.payload
                 // enough credits to send
                 if (node.sender.sendable()) {
-                    node.sender.send({ body : message })
+                    node.sender.send(msg.payload)
                 }
             })
 
@@ -104,6 +100,15 @@ module.exports = function(RED) {
             var options = { host : node.endpointConfig.host, port : node.endpointConfig.port }
             node.connection = container.connect(options)
         }
+    }
+    
+    function outDelivery(node, delivery, status) {
+        var msg = { 
+            delivery: delivery,
+            deliveryStatus: status 
+        }
+        node.send(msg)
+        console.log(msg)
     }
 
     RED.nodes.registerType('amqp-sender', amqpSenderNode)
@@ -155,8 +160,15 @@ module.exports = function(RED) {
             })
 
             container.on('message', function(context) {
-                var msg = { payload: context.message.body }
+                var msg = { 
+                    payload: context.message,
+                    delivery: context.delivery 
+                }
 				node.send(msg)
+            })
+            
+            this.on('input', function(msg) {
+                node.receiver.flow(msg.credit)
             })
 
             this.on('close', function() {

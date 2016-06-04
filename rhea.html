@@ -48,8 +48,9 @@
         category: 'output',
         color: 'Silver',
         inputs: 1,
-        outputs: 0,
+        outputs: 1,
         icon: 'amqp_node.png',
+        align: 'right',
         defaults : {
             endpoint: { type: 'amqp-endpoint', required: true },
             address: { value: '', required: true },
@@ -100,7 +101,7 @@
     RED.nodes.registerType('amqp-receiver' ,{
         category: 'input',
         color: 'Silver',
-        inputs: 0,
+        inputs: 1,
         outputs: 1,
         icon: 'amqp_node.png',
         defaults : {
