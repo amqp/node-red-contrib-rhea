@@ -49,6 +49,23 @@
         </select>
     </div>
     <div class="form-row">
+        <label for="node-input-durable"><i class="icon-tasks"></i> Durable</label>
+        <select id="node-input-durable">
+            <option value="0" selected>none</option>
+            <option value="1">configuration</option>
+            <option value="2">unsettled-state</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-expirypolicy"><i class="icon-tasks"></i> Expiry policy</label>
+        <select id="node-input-expirypolicy">
+            <option value="link-detach">link-detach</option>
+            <option value="session-end" selected>session-end</option>
+            <option value="connection-close">connection-close</option>
+            <option value="never">never</option>
+        </select>
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
     </div>
@@ -66,13 +83,15 @@
         outputs: 1,
         icon: 'amqp_node.png',
         align: 'right',
-        defaults : {
+        defaults: {
             endpoint: { type: 'amqp-endpoint', required: true },
             address: { value: '', required: true },
             autosettle: { value: true },
             dynamic: { value: false },
             sndsettlemode: { value: 2 }, // default is "mixed"
             rcvsettlemode: { value: 0 }, // default is "first"
+            durable: { value: 0 }, // default is "none"
+            expirypolicy: { value: 'session-end' }, // default is "session-end"
             name: { value: '' }
         },
         label: function() {
@@ -120,6 +139,23 @@
         </select>
     </div>
     <div class="form-row">
+        <label for="node-input-durable"><i class="icon-tasks"></i> Durable</label>
+        <select id="node-input-durable">
+            <option value="0" selected>none</option>
+            <option value="1">configuration</option>
+            <option value="2">unsettled-state</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-expirypolicy"><i class="icon-tasks"></i> Expiry policy</label>
+        <select id="node-input-expirypolicy">
+            <option value="link-detach">link-detach</option>
+            <option value="session-end" selected>session-end</option>
+            <option value="connection-close">connection-close</option>
+            <option value="never">never</option>
+        </select>
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
     </div>
@@ -144,6 +180,8 @@
             dynamic: { value: false },
             sndsettlemode: { value: 2 }, // default is "mixed"
             rcvsettlemode: { value: 0 }, // default is "first"
+            durable: { value: 0 }, // default is "none"
+            expirypolicy: { value: 'session-end' }, // default is "session-end"
             name: { value: '' }
         },
         label: function() {

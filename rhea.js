@@ -49,6 +49,8 @@ module.exports = function(RED) {
         this.dynamic = n.dynamic
         this.sndsettlemode = n.sndsettlemode
         this.rcvsettlemode = n.rcvsettlemode
+        this.durable = n.durable
+        this.expirypolicy = n.expirypolicy
 
         var node = this
         // node not yet connected
@@ -63,8 +65,13 @@ module.exports = function(RED) {
                 
                 // build sender options based on node configuration
                 var options = { 
-                    target : { address : node.address, dynamic : node.dynamic }, 
-                    autosettle : node.autosettle,
+                    target: { 
+                        address: node.address, 
+                        dynamic: node.dynamic,
+                        durable: node.durable,
+                        expiry_policy: node.expirypolicy
+                    }, 
+                    autosettle: node.autosettle,
                     snd_settle_mode: node.sndsettlemode,
                     rcv_settle_mode: node.rcvsettlemode
                 }
@@ -101,7 +108,7 @@ module.exports = function(RED) {
                 node.connection.close()
             })
 
-            var options = { host : node.endpointConfig.host, port : node.endpointConfig.port }
+            var options = { host: node.endpointConfig.host, port: node.endpointConfig.port }
             node.connection = container.connect(options)
         }
     }
@@ -135,6 +142,8 @@ module.exports = function(RED) {
         this.dynamic = n.dynamic
         this.sndsettlemode = n.sndsettlemode
         this.rcvsettlemode = n.rcvsettlemode
+        this.durable = n.durable
+        this.expirypolicy = n.expirypolicy
         
         if (this.dynamic)
             this.address = undefined       
@@ -151,10 +160,15 @@ module.exports = function(RED) {
 
                 // build receiver options based on node configuration
                 var options = {
-                    source : { address : node.address, dynamic : node.dynamic },  
+                    source: { 
+                        address: node.address, 
+                        dynamic: node.dynamic,
+                        durable: node.durable,
+                        expiry_policy: node.expirypolicy
+                     },  
                     //prefetch: node.prefetch,
                     credit_window: node.prefetch, 
-                    autoaccept : node.autoaccept,
+                    autoaccept: node.autoaccept,
                     snd_settle_mode: node.sndsettlemode,
                     rcv_settle_mode: node.rcvsettlemode
                 }
@@ -185,7 +199,7 @@ module.exports = function(RED) {
                 node.connection.close()
             })
 
-            var options = { host : node.endpointConfig.host, port : node.endpointConfig.port }
+            var options = { host: node.endpointConfig.host, port: node.endpointConfig.port }
             node.connection = container.connect(options)
         }
     }
