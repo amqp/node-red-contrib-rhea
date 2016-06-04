@@ -98,7 +98,7 @@ module.exports = function(RED) {
             this.on('close', function() {
                 if (node.sender != null)
                     node.sender.detach()
-                connection.close()
+                node.connection.close()
             })
 
             var options = { host : node.endpointConfig.host, port : node.endpointConfig.port }
