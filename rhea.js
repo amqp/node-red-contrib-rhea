@@ -47,6 +47,8 @@ module.exports = function(RED) {
         this.address = n.address
         this.autosettle = n.autosettle
         this.dynamic = n.dynamic
+        this.sndsettlemode = n.sndsettlemode
+        this.rcvsettlemode = n.rcvsettlemode
 
         var node = this
         // node not yet connected
@@ -62,7 +64,9 @@ module.exports = function(RED) {
                 // build sender options based on node configuration
                 var options = { 
                     target : { address : node.address, dynamic : node.dynamic }, 
-                    autosettle : node.autosettle 
+                    autosettle : node.autosettle,
+                    snd_settle_mode: node.sndsettlemode,
+                    rcv_settle_mode: node.rcvsettlemode
                 }
                 node.sender = context.connection.open_sender(options)
             })
@@ -108,7 +112,6 @@ module.exports = function(RED) {
             deliveryStatus: status 
         }
         node.send(msg)
-        console.log(msg)
     }
 
     RED.nodes.registerType('amqp-sender', amqpSenderNode)
@@ -130,6 +133,8 @@ module.exports = function(RED) {
         this.autoaccept = n.autoaccept
         this.prefetch = n.prefetch
         this.dynamic = n.dynamic
+        this.sndsettlemode = n.sndsettlemode
+        this.rcvsettlemode = n.rcvsettlemode
         
         if (this.dynamic)
             this.address = undefined       
@@ -147,8 +152,11 @@ module.exports = function(RED) {
                 // build receiver options based on node configuration
                 var options = {
                     source : { address : node.address, dynamic : node.dynamic },  
-                    prefetch: node.prefetch, 
+                    //prefetch: node.prefetch,
+                    credit_window: node.prefetch, 
                     autoaccept : node.autoaccept,
+                    snd_settle_mode: node.sndsettlemode,
+                    rcv_settle_mode: node.rcvsettlemode
                 }
                 
                 node.receiver = context.connection.open_receiver(options)

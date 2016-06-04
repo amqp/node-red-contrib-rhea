@@ -34,6 +34,21 @@
         <label for="node-input-dynamic" style="width: 70%;">Dynamic</label>
     </div>
     <div class="form-row">
+        <label for="node-input-sndsettlemode"><i class="icon-tasks"></i> Sender settle mode</label>
+        <select id="node-input-sndsettlemode">
+            <option value="0">unsettled</option>
+            <option value="1">settled</option>
+            <option value="2" selected>mixed</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-rcvsettlemode"><i class="icon-tasks"></i> Receiver settle mode</label>
+        <select id="node-input-rcvsettlemode">
+            <option value="0" selected>first</option>
+            <option value="1">second</option>
+        </select>
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
     </div>
@@ -56,6 +71,8 @@
             address: { value: '', required: true },
             autosettle: { value: true },
             dynamic: { value: false },
+            sndsettlemode: { value: 2 }, // default is "mixed"
+            rcvsettlemode: { value: 0 }, // default is "first"
             name: { value: '' }
         },
         label: function() {
@@ -88,6 +105,21 @@
         <label for="node-input-dynamic" style="width: 70%;">Dynamic</label>
     </div>
     <div class="form-row">
+        <label for="node-input-sndsettlemode"><i class="icon-tasks"></i> Sender settle mode</label>
+        <select id="node-input-sndsettlemode">
+            <option value="0">unsettled</option>
+            <option value="1">settled</option>
+            <option value="2" selected>mixed</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-rcvsettlemode"><i class="icon-tasks"></i> Receiver settle mode</label>
+        <select id="node-input-rcvsettlemode">
+            <option value="0" selected>first</option>
+            <option value="1">second</option>
+        </select>
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="name">
     </div>
@@ -110,6 +142,8 @@
             autoaccept: { value: true },
             prefetch: { value: 500, required: true, validate: RED.validators.number() },
             dynamic: { value: false },
+            sndsettlemode: { value: 2 }, // default is "mixed"
+            rcvsettlemode: { value: 0 }, // default is "first"
             name: { value: '' }
         },
         label: function() {
