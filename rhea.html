@@ -115,8 +115,8 @@
         <label for="node-input-autoaccept" style="width: 70%;">Autoaccept</label>
     </div>
     <div class="form-row">
-        <label for="node-input-prefetch"><i class="icon-tasks"></i> Prefetch</label>
-        <input type="text" id="node-input-prefetch">
+        <label for="node-input-creditwindow"><i class="icon-tasks"></i> Credit window</label>
+        <input type="text" id="node-input-creditwindow">
     </div>
     <div class="form-row">
         <label>&nbsp;</label>
@@ -176,7 +176,7 @@
             endpoint: { type: 'amqp-endpoint', required: true },
             address: { value: '', required: true },
             autoaccept: { value: true },
-            prefetch: { value: 500, required: true, validate: RED.validators.number() },
+            creditwindow: { value: 100, required: true, validate: RED.validators.number() },
             dynamic: { value: false },
             sndsettlemode: { value: 2 }, // default is "mixed"
             rcvsettlemode: { value: 0 }, // default is "first"

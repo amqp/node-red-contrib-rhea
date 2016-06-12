@@ -84,15 +84,15 @@ module.exports = function(RED) {
             })
             
             container.on('accepted', function(context) {
-                outDelivery(node, context.delivery, 'accepted')
+                outDelivery(node, context.delivery)
             })
             
             container.on('released', function(context) {
-                outDelivery(node, context.delivery, 'released')
+                outDelivery(node, context.delivery)
             })
             
             container.on('rejected', function(context) {
-                outDelivery(node, context.delivery, 'rejected')
+                outDelivery(node, context.delivery)
             })
 
             this.on('input', function(msg) {
@@ -116,7 +116,7 @@ module.exports = function(RED) {
     function outDelivery(node, delivery, status) {
         var msg = { 
             delivery: delivery,
-            deliveryStatus: status 
+            deliveryStatus: delivery.remote_state.constructor.composite_type 
         }
         node.send(msg)
     }
@@ -138,7 +138,7 @@ module.exports = function(RED) {
         // get all other configuration
         this.address = n.address
         this.autoaccept = n.autoaccept
-        this.prefetch = n.prefetch
+        this.creditwindow = n.creditwindow
         this.dynamic = n.dynamic
         this.sndsettlemode = n.sndsettlemode
         this.rcvsettlemode = n.rcvsettlemode
@@ -166,8 +166,7 @@ module.exports = function(RED) {
                         durable: node.durable,
                         expiry_policy: node.expirypolicy
                      },  
-                    //prefetch: node.prefetch,
-                    credit_window: node.prefetch, 
+                    credit_window: node.creditwindow, 
                     autoaccept: node.autoaccept,
                     snd_settle_mode: node.sndsettlemode,
                     rcv_settle_mode: node.rcvsettlemode
