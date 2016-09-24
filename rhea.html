@@ -198,6 +198,82 @@
     })
 </script>
 
+<script type="text/x-red" data-template-name="amqp-requester">
+    <div class="form-row">
+        <label for="node-input-endpoint"><i class="icon-tasks"></i> Endpoint</label>
+        <input type="text" id="node-input-endpoint">
+    </div>
+    <div class="form-row">
+        <label for="node-input-address"><i class="icon-tasks"></i> Address</label>
+        <input type="text" id="node-input-address">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="amqp-requester">
+    <p>AMQP requester node</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('amqp-requester' ,{
+        category: 'output',
+        color: 'Silver',
+        inputs: 1,
+        outputs: 2,
+        icon: 'amqp_node.png',
+        align: 'right',
+        defaults: {
+            endpoint: { type: 'amqp-endpoint', required: true },
+            address: { value: '', required: true },
+            name: { value: '' }
+        },
+        label: function() {
+            return this.value || 'amqp-requester'
+        }
+    })
+</script>
+
+<script type="text/x-red" data-template-name="amqp-responder">
+    <div class="form-row">
+        <label for="node-input-endpoint"><i class="icon-tasks"></i> Endpoint</label>
+        <input type="text" id="node-input-endpoint">
+    </div>
+    <div class="form-row">
+        <label for="node-input-address"><i class="icon-tasks"></i> Address</label>
+        <input type="text" id="node-input-address">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="amqp-responder">
+    <p>AMQP responder node</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('amqp-responder' ,{
+        category: 'output',
+        color: 'Silver',
+        inputs: 1,
+        outputs: 1,
+        icon: 'amqp_node.png',
+        align: 'right',
+        defaults: {
+            endpoint: { type: 'amqp-endpoint', required: true },
+            address: { value: '', required: true },
+            name: { value: '' }
+        },
+        label: function() {
+            return this.value || 'amqp-responder'
+        }
+    })
+</script>
+
 <script type="text/x-red" data-template-name="amqp-endpoint">
 	<div class="form-row">
         <label for="node-config-input-host"><i class="icon-tasks"></i> Host</label>

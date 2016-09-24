@@ -84,15 +84,18 @@ module.exports = function(RED) {
             })
             
             container.on('accepted', function(context) {
-                outDelivery(node, context.delivery)
+                var msg = outDelivery(node, context.delivery)
+                node.send(msg)
             })
             
             container.on('released', function(context) {
-                outDelivery(node, context.delivery)
+                var msg = outDelivery(node, context.delivery)
+                node.send(msg)
             })
             
             container.on('rejected', function(context) {
-                outDelivery(node, context.delivery)
+                var msg = outDelivery(node, context.delivery)
+                node.send(msg)
             })
 
             this.on('input', function(msg) {
@@ -113,12 +116,12 @@ module.exports = function(RED) {
         }
     }
     
-    function outDelivery(node, delivery, status) {
+    function outDelivery(node, delivery) {
         var msg = { 
             delivery: delivery,
             deliveryStatus: delivery.remote_state.constructor.composite_type 
         }
-        node.send(msg)
+        return msg
     }
 
     RED.nodes.registerType('amqp-sender', amqpSenderNode)
@@ -204,4 +207,187 @@ module.exports = function(RED) {
     }
 
     RED.nodes.registerType('amqp-receiver', amqpReceiverNode)
+
+    /**
+     * Node for AMQP requester
+     */
+    function amqpRequesterNode(n) {
+
+        RED.nodes.createNode(this, n);
+
+        var container = rhea.create_container()
+
+        // get endpoint configuration
+        this.endpoint = n.endpoint
+        this.endpointConfig = RED.nodes.getNode(this.endpoint)
+        // get all other configuration
+        this.address = n.address
+
+        var node = this
+        // node not yet connected
+        this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
+
+        if (this.endpointConfig) {
+
+            container.on('connection_open', function(context) {
+
+                // node connected
+                node.status({ fill: 'green', shape: 'dot', text: 'connected' })
+                
+                // build sender options based on node configuration
+                var sender_options = { 
+                    target: { 
+                        address: node.address 
+                    }
+                }
+                node.sender = context.connection.open_sender(sender_options)
+
+                // build receiver options
+                var receiver_options = {
+                    source: {
+                        dynamic: true
+                    }
+                }
+                node.receiver = context.connection.open_receiver(receiver_options)
+            })
+
+            container.on('disconnected', function(context) {
+                // node disconnected
+                node.status({fill: 'red', shape: 'dot', text: 'disconnected' })
+            })
+
+            container.on('message', function(context) {
+                var msg = { 
+                    payload: context.message,
+                    delivery: context.delivery 
+                }
+				node.send([ ,msg])
+            })
+
+            container.on('accepted', function(context) {
+                var msg = outDelivery(node, context.delivery)
+                node.send([msg, ])
+            })
+            
+            container.on('released', function(context) {
+                var msg = outDelivery(node, context.delivery)
+                node.send([msg, ])
+            })
+            
+            container.on('rejected', function(context) {
+                var msg = outDelivery(node, context.delivery)
+                node.send([msg, ])
+            })
+
+            this.on('input', function(msg) {
+                // enough credits to send
+                if (node.sender.sendable()) {
+                    
+                    if (node.receiver.source.address) {
+                        node.sender.send({ properties: { reply_to: node.receiver.source.address}, body: msg.payload.body })
+                    }
+                    
+                }
+            })
+
+            this.on('close', function() {
+                if (node.sender != null)
+                    node.sender.detach()
+                if (node.receiver != null)
+                    node.receiver.detach()
+                node.connection.close()
+            })
+
+            var options = { host: node.endpointConfig.host, port: node.endpointConfig.port }
+            node.connection = container.connect(options)
+        }
+    }
+
+    RED.nodes.registerType('amqp-requester', amqpRequesterNode)
+
+    /**
+     * Node for AMQP responder
+     */
+    function amqpResponderNode(n) {
+
+        RED.nodes.createNode(this, n);
+
+        var container = rhea.create_container()
+
+        // get endpoint configuration
+        this.endpoint = n.endpoint
+        this.endpointConfig = RED.nodes.getNode(this.endpoint)
+        // get all other configuration
+        this.address = n.address
+
+        var node = this
+        // node not yet connected
+        this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
+
+        if (this.endpointConfig) {
+
+            container.on('connection_open', function(context) {
+
+                // node connected
+                node.status({ fill: 'green', shape: 'dot', text: 'connected' })
+                
+                node.sender = context.connection.open_sender({ target: {} })
+
+                // build receiver options
+                var receiver_options = {
+                    source: { 
+                        address: node.address 
+                    }
+                }
+                node.receiver = context.connection.open_receiver(receiver_options)
+            })
+
+            var request = undefined
+            var reply_to = undefined
+            var response = undefined
+
+            container.on('disconnected', function(context) {
+                // node disconnected
+                node.status({fill: 'red', shape: 'dot', text: 'disconnected' })
+            })
+
+            container.on('message', function(context) {
+                
+                // save request and reply_to address on AMQP message received
+                request = context.message
+                reply_to = request.properties.reply_to
+                
+                // provides the request and delivery as node output
+                var msg = { 
+                    payload: context.message,
+                    delivery: context.delivery 
+                }
+				node.send(msg)
+            })
+
+            this.on('input', function(msg) {
+                // enough credits to send
+                if (node.sender.sendable()) {
+                    
+                    if (reply_to) {
+                        response = { properties: { to: reply_to }, body: msg.payload }     
+                        node.sender.send(response) 
+                    }
+                }
+            })
+
+            this.on('close', function() {
+                if (node.sender != null)
+                    node.sender.detach()
+                if (node.receiver != null)
+                    node.receiver.detach()
+                node.connection.close()
+            })
+
+            var options = { host: node.endpointConfig.host, port: node.endpointConfig.port }
+            node.connection = container.connect(options)
+        }
+    }
+
+    RED.nodes.registerType('amqp-responder', amqpResponderNode)
 }
