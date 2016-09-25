@@ -77,7 +77,7 @@
 
 <script type="text/javascript">
     RED.nodes.registerType('amqp-sender' ,{
-        category: 'output',
+        category: 'amqp',
         color: 'Silver',
         inputs: 1,
         outputs: 1,
@@ -167,7 +167,7 @@
 
 <script type="text/javascript">
     RED.nodes.registerType('amqp-receiver' ,{
-        category: 'input',
+        category: 'amqp',
         color: 'Silver',
         inputs: 1,
         outputs: 1,
@@ -219,7 +219,7 @@
 
 <script type="text/javascript">
     RED.nodes.registerType('amqp-requester' ,{
-        category: 'output',
+        category: 'amqp',
         color: 'Silver',
         inputs: 1,
         outputs: 2,
@@ -232,7 +232,8 @@
         },
         label: function() {
             return this.value || 'amqp-requester'
-        }
+        },
+        paletteLabel: 'amqp-req.'
     })
 </script>
 
@@ -257,12 +258,12 @@
 
 <script type="text/javascript">
     RED.nodes.registerType('amqp-responder' ,{
-        category: 'output',
+        category: 'amqp',
         color: 'Silver',
         inputs: 1,
         outputs: 1,
         icon: 'amqp_node.png',
-        align: 'right',
+        align: 'left',
         defaults: {
             endpoint: { type: 'amqp-endpoint', required: true },
             address: { value: '', required: true },
@@ -270,7 +271,8 @@
         },
         label: function() {
             return this.value || 'amqp-responder'
-        }
+        },
+        paletteLabel: 'amqp-resp.'
     })
 </script>
 
