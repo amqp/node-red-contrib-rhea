@@ -370,7 +370,16 @@ module.exports = function(RED) {
                 if (node.sender.sendable()) {
                     
                     if (reply_to) {
-                        response = { properties: { to: reply_to }, body: msg.payload }     
+                        
+                        // fill the response with the provided one as input
+                        response = msg.payload
+                        // if "properties" aren't defined by the original input (response) message, create with "to" only
+                        if (response.properties === undefined)
+                            response.properties = { to: reply_to }
+                        // otherwise add "to" field to already existing "properties"    
+                        else
+                            response.properties.to = reply_to    
+                                 
                         node.sender.send(response) 
                     }
                 }
