@@ -34,29 +34,28 @@ module.exports = function(RED) {
     /**
      * Node for AMQP sender
      */
-    function amqpSenderNode(n) {
+    function amqpSenderNode(config) {
 
-        RED.nodes.createNode(this, n);
+        RED.nodes.createNode(this, config);
 
         var container = rhea.create_container()
 
         // get endpoint configuration
-        this.endpoint = n.endpoint
-        this.endpointConfig = RED.nodes.getNode(this.endpoint)
+        this.endpoint = RED.nodes.getNode(config.endpoint)
         // get all other configuration
-        this.address = n.address
-        this.autosettle = n.autosettle
-        this.dynamic = n.dynamic
-        this.sndsettlemode = n.sndsettlemode
-        this.rcvsettlemode = n.rcvsettlemode
-        this.durable = n.durable
-        this.expirypolicy = n.expirypolicy
+        this.address = config.address
+        this.autosettle = config.autosettle
+        this.dynamic = config.dynamic
+        this.sndsettlemode = config.sndsettlemode
+        this.rcvsettlemode = config.rcvsettlemode
+        this.durable = config.durable
+        this.expirypolicy = config.expirypolicy
 
         var node = this
         // node not yet connected
         this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
 
-        if (this.endpointConfig) {
+        if (this.endpoint) {
 
             container.on('connection_open', function(context) {
                 
@@ -111,7 +110,7 @@ module.exports = function(RED) {
                 node.connection.close()
             })
 
-            var options = { host: node.endpointConfig.host, port: node.endpointConfig.port }
+            var options = { host: node.endpoint.host, port: node.endpoint.port }
             node.connection = container.connect(options)
         }
     }
@@ -129,24 +128,23 @@ module.exports = function(RED) {
     /**
      * Node for AMQP receiver
      */
-    function amqpReceiverNode(n) {
+    function amqpReceiverNode(config) {
 
-        RED.nodes.createNode(this, n)
+        RED.nodes.createNode(this, config)
 
         var container = rhea.create_container()
 
         // get endpoint configuration
-        this.endpoint = n.endpoint
-        this.endpointConfig = RED.nodes.getNode(this.endpoint)
+        this.endpoint = RED.nodes.getNode(config.endpoint)
         // get all other configuration
-        this.address = n.address
-        this.autoaccept = n.autoaccept
-        this.creditwindow = n.creditwindow
-        this.dynamic = n.dynamic
-        this.sndsettlemode = n.sndsettlemode
-        this.rcvsettlemode = n.rcvsettlemode
-        this.durable = n.durable
-        this.expirypolicy = n.expirypolicy
+        this.address = config.address
+        this.autoaccept = config.autoaccept
+        this.creditwindow = config.creditwindow
+        this.dynamic = config.dynamic
+        this.sndsettlemode = config.sndsettlemode
+        this.rcvsettlemode = config.rcvsettlemode
+        this.durable = config.durable
+        this.expirypolicy = config.expirypolicy
         
         if (this.dynamic)
             this.address = undefined       
@@ -155,7 +153,7 @@ module.exports = function(RED) {
         // node not yet connected
         this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
 
-        if (this.endpointConfig) {
+        if (this.endpoint) {
             
             container.on('connection_open', function(context) {
                 // node connected
@@ -201,7 +199,7 @@ module.exports = function(RED) {
                 node.connection.close()
             })
 
-            var options = { host: node.endpointConfig.host, port: node.endpointConfig.port }
+            var options = { host: node.endpoint.host, port: node.endpoint.port }
             node.connection = container.connect(options)
         }
     }
@@ -211,23 +209,22 @@ module.exports = function(RED) {
     /**
      * Node for AMQP requester
      */
-    function amqpRequesterNode(n) {
+    function amqpRequesterNode(config) {
 
-        RED.nodes.createNode(this, n);
+        RED.nodes.createNode(this, config);
 
         var container = rhea.create_container()
 
         // get endpoint configuration
-        this.endpoint = n.endpoint
-        this.endpointConfig = RED.nodes.getNode(this.endpoint)
+        this.endpoint = RED.nodes.getNode(config.endpoint)
         // get all other configuration
-        this.address = n.address
+        this.address = config.address
 
         var node = this
         // node not yet connected
         this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
 
-        if (this.endpointConfig) {
+        if (this.endpoint) {
 
             container.on('connection_open', function(context) {
 
@@ -298,7 +295,7 @@ module.exports = function(RED) {
                 node.connection.close()
             })
 
-            var options = { host: node.endpointConfig.host, port: node.endpointConfig.port }
+            var options = { host: node.endpoint.host, port: node.endpoint.port }
             node.connection = container.connect(options)
         }
     }
@@ -308,23 +305,22 @@ module.exports = function(RED) {
     /**
      * Node for AMQP responder
      */
-    function amqpResponderNode(n) {
+    function amqpResponderNode(config) {
 
-        RED.nodes.createNode(this, n);
+        RED.nodes.createNode(this, config);
 
         var container = rhea.create_container()
 
         // get endpoint configuration
-        this.endpoint = n.endpoint
-        this.endpointConfig = RED.nodes.getNode(this.endpoint)
+        this.endpoint = RED.nodes.getNode(config.endpoint)
         // get all other configuration
-        this.address = n.address
+        this.address = config.address
 
         var node = this
         // node not yet connected
         this.status({ fill: 'red', shape: 'dot', text: 'disconnected' })
 
-        if (this.endpointConfig) {
+        if (this.endpoint) {
 
             container.on('connection_open', function(context) {
 
@@ -393,7 +389,7 @@ module.exports = function(RED) {
                 node.connection.close()
             })
 
-            var options = { host: node.endpointConfig.host, port: node.endpointConfig.port }
+            var options = { host: node.endpoint.host, port: node.endpoint.port }
             node.connection = container.connect(options)
         }
     }
