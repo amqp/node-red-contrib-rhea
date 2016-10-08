@@ -23,8 +23,6 @@ module.exports = function(RED) {
      */
     function amqpEndpointNode(n) {
 
-        console.log("endpoint");
-
         RED.nodes.createNode(this, n);
 
         // save node parameters
@@ -60,7 +58,6 @@ module.exports = function(RED) {
 
                 node.connecting = true;
 
-                console.log("connecting ...");
                 node.connection = container.connect(options);
 
                 node.connection.on('connection_open', function(context) {
@@ -68,21 +65,17 @@ module.exports = function(RED) {
                     node.connecting = false;
                     node.connected = true;
                     
-                    console.log("connection opened");
                     callback(context.connection);
                 });
 
                 node.connection.on('disconnected', function(context) {
 
                     node.connected = false;
-                    
-                    console.log("connection closed");
                 });
 
             // AMQP connection already established
             } else {
 
-                console.log("already connected");
                 callback(node.connection);
             }
 
@@ -266,7 +259,9 @@ module.exports = function(RED) {
                 });
 
                 node.on('input', function(msg) {
-                    node.receiver.flow(msg.credit);
+                    if (msg.credit) {
+                        node.receiver.flow(msg.credit);
+                    }
                 });
 
                 node.on('close', function() {
