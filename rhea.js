@@ -23,12 +23,70 @@ module.exports = function(RED) {
      */
     function amqpEndpointNode(n) {
 
+        console.log("endpoint");
+
         RED.nodes.createNode(this, n);
 
+        // save node parameters
         this.host = n.host;
         this.port = n.port;
         this.username = n.username;
         this.password = n.password;
+
+        // build options for connection
+        var options = { host: this.host, port: this.port, container_id: container.generate_uuid() };
+        if (this.username) {
+            options.username = this.username;
+        }
+        if (this.password) {
+            options.password = this.password;
+        }
+
+        var node = this;
+
+        this.connected = false;
+        this.connecting = false;
+
+        /**
+         * Exposed function for connecting to the remote AMQP container
+         * creating an AMQP connection object
+         * 
+         * @param callback  function called when the connection is established
+         */
+        this.connect = function(callback) {
+
+            // AMQP connection not established, trying to do that
+            if (!node.connected && !node.connecting) {
+
+                node.connecting = true;
+
+                console.log("connecting ...");
+                node.connection = container.connect(options);
+
+                node.connection.on('connection_open', function(context) {
+
+                    node.connecting = false;
+                    node.connected = true;
+                    
+                    console.log("connection opened");
+                    callback(context.connection);
+                });
+
+                node.connection.on('disconnected', function(context) {
+
+                    node.connected = false;
+                    
+                    console.log("connection closed");
+                });
+
+            // AMQP connection already established
+            } else {
+
+                console.log("already connected");
+                callback(node.connection);
+            }
+
+        }  
     }
 
     RED.nodes.registerType('amqp-endpoint', amqpEndpointNode)
@@ -55,22 +113,24 @@ module.exports = function(RED) {
         // node not yet connected
         this.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
 
-        if (this.endpoint) {
+        if (node.endpoint) {
 
-            var options = { host: node.endpoint.host, port: node.endpoint.port, container_id: container.generate_uuid() };
-            if (node.endpoint.username) {
-                options.username = node.endpoint.username;
-            }
-            if (node.endpoint.password) {
-                options.password = node.endpoint.password;
-            }
-            node.connection = container.connect(options);
+            node.endpoint.connect(function(connection) {
+                setup(connection);
+            });
+            
+            /**
+             * Node setup for creating sender link 
+             * 
+             * @param connection    Connection instance
+             */
+            function setup(connection) {
 
-            node.connection.on('connection_open', function(context) {
-                
+                node.connection = connection;
+
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' });
-                
+
                 // build sender options based on node configuration
                 var options = { 
                     target: { 
@@ -83,7 +143,7 @@ module.exports = function(RED) {
                     snd_settle_mode: node.sndsettlemode,
                     rcv_settle_mode: node.rcvsettlemode
                 };
-                node.sender = context.connection.open_sender(options);
+                node.sender = node.connection.open_sender(options);
 
                 node.sender.on('accepted', function(context) {
                     var msg = outDelivery(node, context.delivery);
@@ -99,26 +159,26 @@ module.exports = function(RED) {
                     var msg = outDelivery(node, context.delivery);
                     node.send(msg);
                 });
-            });
 
-            node.connection.on('disconnected', function(context) {
-                // node disconnected
-                node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
-            });
-            
-            this.on('input', function(msg) {
-                // enough credits to send
-                if (node.sender.sendable()) {
-                    node.sender.send(msg.payload);
-                }
-            });
+                node.connection.on('disconnected', function(context) {
+                    // node disconnected
+                    node.status({fill: 'red', shape: 'dot', text: 'disconnected' });
+                });
 
-            this.on('close', function() {
-                if (node.sender != null)
-                    node.sender.detach();
-                node.connection.close();
-            });
-            
+                node.on('input', function(msg) {
+                    // enough credits to send
+                    if (node.sender.sendable()) {
+                        node.sender.send(msg.payload);
+                    }
+                });
+
+                node.on('close', function() {
+                    if (node.sender != null)
+                        node.sender.detach();
+                    node.connection.close();
+                });
+            }
+
         }
     }
     
@@ -160,16 +220,19 @@ module.exports = function(RED) {
 
         if (this.endpoint) {
 
-            var options = { host: node.endpoint.host, port: node.endpoint.port, container_id: container.generate_uuid() };
-            if (node.endpoint.username) {
-                options.username = node.endpoint.username;
-            }
-            if (node.endpoint.password) {
-                options.password = node.endpoint.password;
-            }
-            node.connection = container.connect(options);
-            
-            node.connection.on('connection_open', function(context) {
+            node.endpoint.connect(function(connection) {
+                setup(connection);
+            });
+
+            /**
+             * Node setup for creating receiver link 
+             * 
+             * @param connection    Connection instance
+             */
+            function setup(connection) {
+
+                node.connection = connection;
+
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' });
 
@@ -187,7 +250,7 @@ module.exports = function(RED) {
                     rcv_settle_mode: node.rcvsettlemode
                 };
                 
-                node.receiver = context.connection.open_receiver(options);
+                node.receiver = node.connection.open_receiver(options);
 
                 node.receiver.on('message', function(context) {
                     var msg = { 
@@ -196,23 +259,23 @@ module.exports = function(RED) {
                     };
                     node.send(msg);
                 });
-            });
 
-            node.connection.on('disconnected', function(context) {
-                // node disconnected
-                node.status({fill: 'red', shape: 'dot', text: 'disconnected' });
-            });
+                node.connection.on('disconnected', function(context) {
+                    // node disconnected
+                    node.status({fill: 'red', shape: 'dot', text: 'disconnected' });
+                });
 
-            this.on('input', function(msg) {
-                node.receiver.flow(msg.credit);
-            });
+                node.on('input', function(msg) {
+                    node.receiver.flow(msg.credit);
+                });
 
-            this.on('close', function() {
-                if (node.receiver != null)
-                    node.receiver.detach();
-                node.connection.close();
-            });
-            
+                node.on('close', function() {
+                    if (node.receiver != null)
+                        node.receiver.detach();
+                    node.connection.close();
+                });
+            }
+
         }
     }
 
@@ -238,16 +301,19 @@ module.exports = function(RED) {
 
         if (this.endpoint) {
 
-            var options = { host: node.endpoint.host, port: node.endpoint.port, container_id: container.generate_uuid() };
-            if (node.endpoint.username) {
-                options.username = node.endpoint.username;
-            }
-            if (node.endpoint.password) {
-                options.password = node.endpoint.password;
-            }
-            node.connection = container.connect(options);
+            node.endpoint.connect(function(connection) {
+                setup(connection);
+            });
 
-            node.connection.on('connection_open', function(context) {
+            /**
+             * Node setup for creating sender link for sending the request
+             * and the dynamic receiver for receiving reply 
+             * 
+             * @param connection    Connection instance
+             */
+            function setup(connection) {
+
+                node.connection = connection;
 
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' });
@@ -258,7 +324,7 @@ module.exports = function(RED) {
                         address: node.address 
                     }
                 };
-                node.sender = context.connection.open_sender(sender_options);
+                node.sender = node.connection.open_sender(sender_options);
 
                 node.sender.on('accepted', function(context) {
                     var msg = outDelivery(node, context.delivery);
@@ -281,7 +347,7 @@ module.exports = function(RED) {
                         dynamic: true
                     }
                 };
-                node.receiver = context.connection.open_receiver(receiver_options);
+                node.receiver = node.connection.open_receiver(receiver_options);
 
                 node.receiver.on('message', function(context) {
                     var msg = { 
@@ -290,32 +356,32 @@ module.exports = function(RED) {
                     };
                     node.send([ ,msg]);
                 });
-            })
 
-            node.connection.on('disconnected', function(context) {
-                // node disconnected
-                node.status({fill: 'red', shape: 'dot', text: 'disconnected' });
-            });
+                node.connection.on('disconnected', function(context) {
+                    // node disconnected
+                    node.status({fill: 'red', shape: 'dot', text: 'disconnected' });
+                });
 
-            this.on('input', function(msg) {
-                // enough credits to send
-                if (node.sender.sendable()) {
-                    
-                    if (node.receiver.source.address) {
-                        node.sender.send({ properties: { reply_to: node.receiver.source.address}, body: msg.payload.body });
+                node.on('input', function(msg) {
+                    // enough credits to send
+                    if (node.sender.sendable()) {
+                        
+                        if (node.receiver.source.address) {
+                            node.sender.send({ properties: { reply_to: node.receiver.source.address}, body: msg.payload.body });
+                        }
+                        
                     }
-                    
-                }
-            });
+                });
 
-            this.on('close', function() {
-                if (node.sender != null)
-                    node.sender.detach();
-                if (node.receiver != null)
-                    node.receiver.detach();
-                node.connection.close();
-            })
-            
+                node.on('close', function() {
+                    if (node.sender != null)
+                        node.sender.detach();
+                    if (node.receiver != null)
+                        node.receiver.detach();
+                    node.connection.close();
+                })
+            }
+
         }
     }
 
@@ -339,21 +405,24 @@ module.exports = function(RED) {
 
         if (this.endpoint) {
 
-            var options = { host: node.endpoint.host, port: node.endpoint.port, container_id: container.generate_uuid() };
-            if (node.endpoint.username) {
-                options.username = node.endpoint.username;
-            }
-            if (node.endpoint.password) {
-                options.password = node.endpoint.password;
-            }
-            node.connection = container.connect(options);
+            node.endpoint.connect(function(connection) {
+                setup(connection);
+            });
 
-            node.connection.on('connection_open', function(context) {
+            /**
+             * Node setup for creating receiver link for receiving the request
+             * and the sender for sending reply 
+             * 
+             * @param connection    Connection instance
+             */
+            function setup(connection) {
+
+                node.connection = connection;
 
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' });
                 
-                node.sender = context.connection.open_sender({ target: {} });
+                node.sender = node.connection.open_sender({ target: {} });
 
                 // build receiver options
                 var receiver_options = {
@@ -361,7 +430,7 @@ module.exports = function(RED) {
                         address: node.address 
                     }
                 };
-                node.receiver = context.connection.open_receiver(receiver_options);
+                node.receiver = node.connection.open_receiver(receiver_options);
 
                 node.receiver.on('message', function(context) {
                 
@@ -377,44 +446,44 @@ module.exports = function(RED) {
                     node.send(msg);
                 });
 
-            });
+                var request = undefined;
+                var reply_to = undefined;
+                var response = undefined;
 
-            var request = undefined;
-            var reply_to = undefined;
-            var response = undefined;
+                node.connection.on('disconnected', function(context) {
+                    // node disconnected
+                    node.status({fill: 'red', shape: 'dot', text: 'disconnected' });
+                });
 
-            node.connection.on('disconnected', function(context) {
-                // node disconnected
-                node.status({fill: 'red', shape: 'dot', text: 'disconnected' });
-            });
-
-            this.on('input', function(msg) {
-                // enough credits to send
-                if (node.sender.sendable()) {
-                    
-                    if (reply_to) {
+                node.on('input', function(msg) {
+                    // enough credits to send
+                    if (node.sender.sendable()) {
                         
-                        // fill the response with the provided one as input
-                        response = msg.payload;
-                        // if "properties" aren't defined by the original input (response) message, create with "to" only
-                        if (response.properties === undefined)
-                            response.properties = { to: reply_to };
-                        // otherwise add "to" field to already existing "properties"    
-                        else
-                            response.properties.to = reply_to;
-                                 
-                        node.sender.send(response); 
+                        if (reply_to) {
+                            
+                            // fill the response with the provided one as input
+                            response = msg.payload;
+                            // if "properties" aren't defined by the original input (response) message, create with "to" only
+                            if (response.properties === undefined)
+                                response.properties = { to: reply_to };
+                            // otherwise add "to" field to already existing "properties"    
+                            else
+                                response.properties.to = reply_to;
+                                    
+                            node.sender.send(response); 
+                        }
                     }
-                }
-            });
+                });
 
-            this.on('close', function() {
-                if (node.sender != null)
-                    node.sender.detach();
-                if (node.receiver != null)
-                    node.receiver.detach();
-                node.connection.close();
-            })
+                node.on('close', function() {
+                    if (node.sender != null)
+                        node.sender.detach();
+                    if (node.receiver != null)
+                        node.receiver.detach();
+                    node.connection.close();
+                })
+
+            }
 
         }
     }
