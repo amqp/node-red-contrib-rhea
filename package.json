@@ -13,16 +13,17 @@
   "keywords": [
     "node-red",
     "amqp",
-    "activemq",
-    "artemis",
+    "messaging",
+    "iot"
   ],
   "node-red": {
     "nodes": {
-      "amqp": "rhea.js"
+      "rhea": "rhea/rhea.js"
     }
   },
   "author": {
      "name": "Paolo Patierno",
-     "email": "ppatierno@live.com"
+     "email": "ppatierno@live.com",
+     "url": "https://paolopatierno.wordpress.com/"
   }
 }

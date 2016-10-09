@@ -96,7 +96,8 @@
         },
         label: function() {
             return this.value || 'amqp-sender'
-        }
+        },
+        paletteLabel: 'amqp-send.'
     })
 </script>
 
@@ -187,6 +188,7 @@
         label: function() {
             return this.value || 'amqp-receiver'
         },
+        paletteLabel: 'amqp-recv.',
         oneditprepare: function() {
             $('#node-input-prefetch').spinner({min:0});
             
