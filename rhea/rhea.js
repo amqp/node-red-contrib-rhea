@@ -60,6 +60,15 @@ module.exports = function(RED) {
 
                 node.connection = container.connect(options);
 
+                node.connection.on('connection_error', function(context) {
+
+                    node.connecting = false;
+                    node.connected = false;
+                    var error = context.connection.get_error();
+                    node.error(error);
+                    
+                });
+
                 node.connection.on('connection_open', function(context) {
 
                     node.connecting = false;
