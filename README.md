@@ -4,7 +4,7 @@ This project provides a set of nodes for [Node-RED](http://nodered.org/) that ma
 
 ## Documentation
 
-The official documentation is available in the related [Wiki](https://github.com/ppatierno/rhea-node/wiki) pages.
+The official documentation is available [here](doc/Home.md).
 
 ## Installation
 
