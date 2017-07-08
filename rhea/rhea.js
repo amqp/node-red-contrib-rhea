@@ -371,7 +371,7 @@ module.exports = function(RED) {
                     if (node.sender.sendable()) {
                         
                         if (node.receiver.source.address) {
-                            node.sender.send({ properties: { reply_to: node.receiver.source.address}, body: msg.payload.body });
+                            node.sender.send({ reply_to: node.receiver.source.address, body: msg.payload.body });
                         }
                         
                     }
@@ -421,6 +421,10 @@ module.exports = function(RED) {
              */
             function setup(connection) {
 
+                var request = undefined;
+                var reply_to = undefined;
+                var response = undefined;
+
                 node.connection = connection;
 
                 // node connected
@@ -440,7 +444,7 @@ module.exports = function(RED) {
                 
                     // save request and reply_to address on AMQP message received
                     request = context.message;
-                    reply_to = request.properties.reply_to;
+                    reply_to = request.reply_to;
                     
                     // provides the request and delivery as node output
                     var msg = { 
@@ -449,10 +453,6 @@ module.exports = function(RED) {
                     };
                     node.send(msg);
                 });
-
-                var request = undefined;
-                var reply_to = undefined;
-                var response = undefined;
 
                 node.connection.on('disconnected', function(context) {
                     // node disconnected
@@ -467,12 +467,7 @@ module.exports = function(RED) {
                             
                             // fill the response with the provided one as input
                             response = msg.payload;
-                            // if "properties" aren't defined by the original input (response) message, create with "to" only
-                            if (response.properties === undefined)
-                                response.properties = { to: reply_to };
-                            // otherwise add "to" field to already existing "properties"    
-                            else
-                                response.properties.to = reply_to;
+                            response.to = reply_to;
                                     
                             node.sender.send(response); 
                         }
