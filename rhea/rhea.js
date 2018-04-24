@@ -30,6 +30,8 @@ module.exports = function(RED) {
         this.port = n.port;
         this.username = n.username;
         this.password = n.password;
+        this.transport = n.transport;
+        this.rejectUnauthorized = n.rejectUnauthorized;
 
         // build options for connection
         var options = { host: this.host, port: this.port, container_id: container.generate_uuid() };
@@ -39,6 +41,11 @@ module.exports = function(RED) {
         if (this.password) {
             options.password = this.password;
         }
+        if (this.transport) {
+            options.transport = this.transport;
+        }
+
+        options.rejectUnauthorized = this.rejectUnauthorized;
 
         var node = this;
 

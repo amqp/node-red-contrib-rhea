@@ -191,7 +191,7 @@
         paletteLabel: 'amqp-recv.',
         oneditprepare: function() {
             $('#node-input-prefetch').spinner({min:0});
-            
+
             // if dynamic is set, the address MUST NOT be used (AMQP 1.0 spec)
             $('#node-input-dynamic').on('change', function() {
                 $('#node-input-address').prop('disabled', this.checked)
@@ -279,7 +279,7 @@
 </script>
 
 <script type="text/x-red" data-template-name="amqp-endpoint">
-	<div class="form-row">
+    <div class="form-row">
         <label for="node-config-input-host"><i class="icon-tasks"></i> Host</label>
         <input type="text" id="node-config-input-host" placeholder="host">
     </div>
@@ -295,9 +295,21 @@
         <label for="node-config-input-password"><i class="icon-tasks"></i> Password</label>
         <input type="text" id="node-config-input-password" placeholder="password">
     </div>
-	<div class="form-row">
-        <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-config-input-name" placeholder="name">
+    <div class="form-row">
+         <label for="node-config-input-transport"><i class="icon-tag"></i> Transport</label>
+         <select id="node-config-input-transport">
+             <option value="" selected>none</option>
+             <option value="ssl">ssl</option>
+             <option value="tls">tls</option>
+         </select>
+    </div>
+    <div class="form-row">
+         <label for="node-config-input-rejectUnauthorized"><i class="icon-tag"></i> Reject Unauthorized</label>
+         <input type="checkbox" id="node-config-input-rejectUnauthorized" style="display: inline-block; width: auto; vertical-align: top;">
+    </div>
+    <div class="form-row">
+         <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
+         <input type="text" id="node-config-input-name" placeholder="name">
     </div>
 </script>
 
@@ -309,7 +321,9 @@
           port: { value: '', required: true, validate: RED.validators.number() } ,
           username: { value: '' },
           password: { value: '' },
-          name: { value: '' }
+          name: { value: '' },
+          transport: { value: '' },
+          rejectUnauthorized: { value: true }
         },
 		label: function() {
             return this.name || this.host + ":" + this.port;
