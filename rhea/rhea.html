@@ -191,7 +191,7 @@
         paletteLabel: 'amqp-recv.',
         oneditprepare: function() {
             $('#node-input-prefetch').spinner({min:0});
-            
+
             // if dynamic is set, the address MUST NOT be used (AMQP 1.0 spec)
             $('#node-input-dynamic').on('change', function() {
                 $('#node-input-address').prop('disabled', this.checked)
@@ -295,6 +295,10 @@
         <label for="node-config-input-password"><i class="icon-tasks"></i> Password</label>
         <input type="text" id="node-config-input-password" placeholder="password">
     </div>
+    <div class="form-row">
+          <label for="node-config-input-clientId"><i class="icon-tag"></i> clientId</label>
+          <input type="text" id="node-config-input-clientId" placeholder="clientId">
+      </div>
 	<div class="form-row">
         <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-config-input-name" placeholder="name">
@@ -309,6 +313,7 @@
           port: { value: '', required: true, validate: RED.validators.number() } ,
           username: { value: '' },
           password: { value: '' },
+          clientId: { value: '' },
           name: { value: '' }
         },
 		label: function() {

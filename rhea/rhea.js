@@ -30,14 +30,20 @@ module.exports = function(RED) {
         this.port = n.port;
         this.username = n.username;
         this.password = n.password;
+        this.container_id = n.clientId;
 
         // build options for connection
-        var options = { host: this.host, port: this.port, container_id: container.generate_uuid() };
+        var options = { host: this.host, port: this.port};
         if (this.username) {
             options.username = this.username;
         }
         if (this.password) {
             options.password = this.password;
+        }
+        if (this.container_id) {
+            options.container_id = this.container_id;
+        } else {
+            options.container_id = "node-red-rhea-" + container.generate_uuid();
         }
 
         var node = this;
