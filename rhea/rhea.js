@@ -30,7 +30,7 @@ module.exports = function(RED) {
         this.port = n.port;
         this.username = n.username;
         this.password = n.password;
-        this.container_id = n.clientId;
+        this.container_id = n.container_id;
 
         // build options for connection
         var options = { host: this.host, port: this.port};
