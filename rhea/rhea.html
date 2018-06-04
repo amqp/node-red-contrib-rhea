@@ -1,5 +1,5 @@
  <!--
-    Copyright 2016 Red Hat Inc.
+    Copyright 2018 Red Hat Inc.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -296,6 +296,10 @@
         <input type="text" id="node-config-input-password" placeholder="password">
     </div>
     <div class="form-row">
+          <label for="node-config-input-container_id"><i class="icon-tag"></i> Container Id</label>
+          <input type="text" id="node-config-input-container_id" placeholder="Leave blank for auto generated">
+    </div>
+   	<div class="form-row">
          <label for="node-config-input-transport"><i class="icon-tag"></i> Transport</label>
          <select id="node-config-input-transport">
              <option value="" selected>none</option>
@@ -321,9 +325,10 @@
           port: { value: '', required: true, validate: RED.validators.number() } ,
           username: { value: '' },
           password: { value: '' },
-          name: { value: '' },
+          container_id: { value: '' },
           transport: { value: '' },
-          rejectUnauthorized: { value: true }
+          rejectUnauthorized: { value: true },
+          name: { value: '' }
         },
 		label: function() {
             return this.name || this.host + ":" + this.port;
