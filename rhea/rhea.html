@@ -296,8 +296,8 @@
         <input type="text" id="node-config-input-password" placeholder="password">
     </div>
     <div class="form-row">
-          <label for="node-config-input-clientId"><i class="icon-tag"></i> clientId</label>
-          <input type="text" id="node-config-input-clientId" placeholder="Leave blank for auto generated">
+          <label for="node-config-input-container_id"><i class="icon-tag"></i> Container Id</label>
+          <input type="text" id="node-config-input-container_id" placeholder="Leave blank for auto generated">
       </div>
 	<div class="form-row">
         <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
@@ -313,7 +313,7 @@
           port: { value: '', required: true, validate: RED.validators.number() } ,
           username: { value: '' },
           password: { value: '' },
-          clientId: { value: '' },
+          container_id: { value: '' },
           name: { value: '' }
         },
 		label: function() {
