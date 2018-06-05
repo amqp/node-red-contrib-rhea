@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat Inc.
+ * Copyright 2018 Red Hat Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ module.exports = function(RED) {
         this.username = n.username;
         this.password = n.password;
         this.container_id = n.container_id;
+        this.transport = n.transport;
+        this.rejectUnauthorized = n.rejectUnauthorized;
 
         // build options for connection
         var options = { host: this.host, port: this.port};
@@ -45,6 +47,11 @@ module.exports = function(RED) {
         } else {
             options.container_id = "node-red-rhea-" + container.generate_uuid();
         }
+        if (this.transport) {
+            options.transport = this.transport;
+        }
+
+        options.rejectUnauthorized = this.rejectUnauthorized;
 
         var node = this;
 
@@ -54,7 +61,7 @@ module.exports = function(RED) {
         /**
          * Exposed function for connecting to the remote AMQP container
          * creating an AMQP connection object
-         * 
+         *
          * @param callback  function called when the connection is established
          */
         this.connect = function(callback) {
@@ -72,14 +79,14 @@ module.exports = function(RED) {
                     node.connected = false;
                     var error = context.connection.get_error();
                     node.error(error);
-                    
+
                 });
 
                 node.connection.on('connection_open', function(context) {
 
                     node.connecting = false;
                     node.connected = true;
-                    
+
                     callback(context.connection);
                 });
 
@@ -94,7 +101,7 @@ module.exports = function(RED) {
                 callback(node.connection);
             }
 
-        }  
+        }
     }
 
     RED.nodes.registerType('amqp-endpoint', amqpEndpointNode)
@@ -126,10 +133,10 @@ module.exports = function(RED) {
             node.endpoint.connect(function(connection) {
                 setup(connection);
             });
-            
+
             /**
-             * Node setup for creating sender link 
-             * 
+             * Node setup for creating sender link
+             *
              * @param connection    Connection instance
              */
             function setup(connection) {
@@ -140,13 +147,13 @@ module.exports = function(RED) {
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' });
 
                 // build sender options based on node configuration
-                var options = { 
-                    target: { 
-                        address: node.address, 
+                var options = {
+                    target: {
+                        address: node.address,
                         dynamic: node.dynamic,
                         durable: node.durable,
                         expiry_policy: node.expirypolicy
-                    }, 
+                    },
                     autosettle: node.autosettle,
                     snd_settle_mode: node.sndsettlemode,
                     rcv_settle_mode: node.rcvsettlemode
@@ -157,12 +164,12 @@ module.exports = function(RED) {
                     var msg = outDelivery(node, context.delivery);
                     node.send(msg);
                 });
-                
+
                 node.sender.on('released', function(context) {
                     var msg = outDelivery(node, context.delivery);
                     node.send(msg);
                 });
-                
+
                 node.sender.on('rejected', function(context) {
                     var msg = outDelivery(node, context.delivery);
                     node.send(msg);
@@ -189,11 +196,11 @@ module.exports = function(RED) {
 
         }
     }
-    
+
     function outDelivery(node, delivery) {
-        var msg = { 
+        var msg = {
             delivery: delivery,
-            deliveryStatus: delivery.remote_state.constructor.composite_type 
+            deliveryStatus: delivery.remote_state.constructor.composite_type
         };
         return msg;
     }
@@ -206,7 +213,7 @@ module.exports = function(RED) {
     function amqpReceiverNode(config) {
 
         RED.nodes.createNode(this, config);
-        
+
         // get endpoint configuration
         this.endpoint = RED.nodes.getNode(config.endpoint);
         // get all other configuration
@@ -218,7 +225,7 @@ module.exports = function(RED) {
         this.rcvsettlemode = config.rcvsettlemode;
         this.durable = config.durable;
         this.expirypolicy = config.expirypolicy;
-        
+
         if (this.dynamic)
             this.address = undefined;
 
@@ -233,8 +240,8 @@ module.exports = function(RED) {
             });
 
             /**
-             * Node setup for creating receiver link 
-             * 
+             * Node setup for creating receiver link
+             *
              * @param connection    Connection instance
              */
             function setup(connection) {
@@ -246,24 +253,24 @@ module.exports = function(RED) {
 
                 // build receiver options based on node configuration
                 var options = {
-                    source: { 
-                        address: node.address, 
+                    source: {
+                        address: node.address,
                         dynamic: node.dynamic,
                         durable: node.durable,
                         expiry_policy: node.expirypolicy
-                     },  
-                    credit_window: node.creditwindow, 
+                     },
+                    credit_window: node.creditwindow,
                     autoaccept: node.autoaccept,
                     snd_settle_mode: node.sndsettlemode,
                     rcv_settle_mode: node.rcvsettlemode
                 };
-                
+
                 node.receiver = node.connection.open_receiver(options);
 
                 node.receiver.on('message', function(context) {
-                    var msg = { 
+                    var msg = {
                         payload: context.message,
-                        delivery: context.delivery 
+                        delivery: context.delivery
                     };
                     node.send(msg);
                 });
@@ -317,8 +324,8 @@ module.exports = function(RED) {
 
             /**
              * Node setup for creating sender link for sending the request
-             * and the dynamic receiver for receiving reply 
-             * 
+             * and the dynamic receiver for receiving reply
+             *
              * @param connection    Connection instance
              */
             function setup(connection) {
@@ -327,11 +334,11 @@ module.exports = function(RED) {
 
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' });
-                
+
                 // build sender options based on node configuration
-                var sender_options = { 
-                    target: { 
-                        address: node.address 
+                var sender_options = {
+                    target: {
+                        address: node.address
                     }
                 };
                 node.sender = node.connection.open_sender(sender_options);
@@ -340,12 +347,12 @@ module.exports = function(RED) {
                     var msg = outDelivery(node, context.delivery);
                     node.send([msg, ]);
                 });
-                
+
                 node.sender.on('released', function(context) {
                     var msg = outDelivery(node, context.delivery);
                     node.send([msg, ]);
                 });
-                
+
                 node.sender.on('rejected', function(context) {
                     var msg = outDelivery(node, context.delivery);
                     node.send([msg, ]);
@@ -360,9 +367,9 @@ module.exports = function(RED) {
                 node.receiver = node.connection.open_receiver(receiver_options);
 
                 node.receiver.on('message', function(context) {
-                    var msg = { 
+                    var msg = {
                         payload: context.message,
-                        delivery: context.delivery 
+                        delivery: context.delivery
                     };
                     node.send([ ,msg]);
                 });
@@ -375,11 +382,11 @@ module.exports = function(RED) {
                 node.on('input', function(msg) {
                     // enough credits to send
                     if (node.sender.sendable()) {
-                        
+
                         if (node.receiver.source.address) {
                             node.sender.send({ reply_to: node.receiver.source.address, body: msg.payload.body });
                         }
-                        
+
                     }
                 });
 
@@ -421,8 +428,8 @@ module.exports = function(RED) {
 
             /**
              * Node setup for creating receiver link for receiving the request
-             * and the sender for sending reply 
-             * 
+             * and the sender for sending reply
+             *
              * @param connection    Connection instance
              */
             function setup(connection) {
@@ -435,27 +442,27 @@ module.exports = function(RED) {
 
                 // node connected
                 node.status({ fill: 'green', shape: 'dot', text: 'connected' });
-                
+
                 node.sender = node.connection.open_sender({ target: {} });
 
                 // build receiver options
                 var receiver_options = {
-                    source: { 
-                        address: node.address 
+                    source: {
+                        address: node.address
                     }
                 };
                 node.receiver = node.connection.open_receiver(receiver_options);
 
                 node.receiver.on('message', function(context) {
-                
+
                     // save request and reply_to address on AMQP message received
                     request = context.message;
                     reply_to = request.reply_to;
-                    
+
                     // provides the request and delivery as node output
-                    var msg = { 
+                    var msg = {
                         payload: context.message,
-                        delivery: context.delivery 
+                        delivery: context.delivery
                     };
                     node.send(msg);
                 });
@@ -468,14 +475,14 @@ module.exports = function(RED) {
                 node.on('input', function(msg) {
                     // enough credits to send
                     if (node.sender.sendable()) {
-                        
+
                         if (reply_to) {
-                            
+
                             // fill the response with the provided one as input
                             response = msg.payload;
                             response.to = reply_to;
-                                    
-                            node.sender.send(response); 
+
+                            node.sender.send(response);
                         }
                     }
                 });
