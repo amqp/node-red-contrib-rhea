@@ -308,6 +308,13 @@
          </select>
     </div>
     <div class="form-row">
+        <input type="checkbox" id="node-config-input-usetls" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-config-input-usetls" style="width: auto">Enable secure (SSL/TLS) connection</label>
+        <div id="node-config-row-tls" class="hide">
+            <label style="width: auto; margin-left: 20px; margin-right: 10px;" for="node-config-input-tls">TLS Configuration</label><input style="width: 300px;" type="text" id="node-config-input-tls">
+        </div>
+    </div>
+    <div class="form-row">
          <label for="node-config-input-rejectUnauthorized"><i class="icon-tag"></i> Reject Unauthorized</label>
          <input type="checkbox" id="node-config-input-rejectUnauthorized" style="display: inline-block; width: auto; vertical-align: top;">
     </div>
@@ -327,11 +334,31 @@
           password: { value: '' },
           container_id: { value: '' },
           transport: { value: '' },
+          tls: { type: 'tls-config', required: false },
           rejectUnauthorized: { value: true },
           name: { value: '' }
         },
 		label: function() {
             return this.name || this.host + ":" + this.port;
+        },
+        oneditprepare: function () {
+
+            function updateTLSOptions() {
+                if ($("#node-config-input-usetls").is(':checked')) {
+                    $("#node-config-row-tls").show();
+                } else {
+                    $("#node-config-row-tls").hide();
+                }
+            }
+            updateTLSOptions();
+            $("#node-config-input-usetls").on("click",function() {
+                updateTLSOptions();
+            });
+        },
+        oneditsave: function() {
+            if (!$("#node-config-input-usetls").is(':checked')) {
+                $("#node-config-input-tls").val("");
+            }
         }
 	});
 </script>
