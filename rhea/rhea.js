@@ -31,8 +31,12 @@ module.exports = function(RED) {
         this.username = n.username;
         this.password = n.password;
         this.container_id = n.container_id;
-        this.transport = n.transport;
         this.rejectUnauthorized = n.rejectUnauthorized;
+        this.usetls = n.usetls;
+
+        if (this.usetls && n.tls) {
+            this.tls = RED.nodes.getNode(n.tls)
+        }
 
         // build options for connection
         var options = { host: this.host, port: this.port};
@@ -47,8 +51,11 @@ module.exports = function(RED) {
         } else {
             options.container_id = "node-red-rhea-" + container.generate_uuid();
         }
-        if (this.transport) {
-            options.transport = this.transport;
+        if (this.usetls && n.tls) {
+            options.transport = 'tls';
+            if (this.tls.credentials.cadata) {
+                options.ca = this.tls.credentials.cadata
+            }
         }
 
         options.rejectUnauthorized = this.rejectUnauthorized;
@@ -57,7 +64,7 @@ module.exports = function(RED) {
 
         this.connected = false;
         this.connecting = false;
-
+        
         /**
          * Exposed function for connecting to the remote AMQP container
          * creating an AMQP connection object
