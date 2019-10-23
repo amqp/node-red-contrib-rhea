@@ -279,6 +279,7 @@ module.exports = function(RED) {
                         payload: context.message,
                         delivery: context.delivery
                     };
+                    delete msg.delivery.link;		// some attributes of link cannot be cloned and it will throw exceptions here. so I delete this attributes.
                     node.send(msg);
                 });
 
